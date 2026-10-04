@@ -1,0 +1,73 @@
+const int sensorIZQ = 13;
+const int sensorDER = 12;
+
+const int in1 = 11;
+const int in2 = 10;
+const int in3 = 9;
+const int in4 = 8;
+
+void adelante(){
+  digitalWrite(in1, HIGH);
+  digitalWrite(in2, LOW);
+
+  digitalWrite(in3, HIGH);
+  digitalWrite(in4, LOW);
+}
+
+void derecha(){
+  digitalWrite(in1, LOW);
+  digitalWrite(in2, HIGH);
+
+  digitalWrite(in3, LOW);
+  digitalWrite(in4, LOW);
+}
+
+void izquierda(){
+  digitalWrite(in1, LOW);
+  digitalWrite(in2, LOW);
+
+  digitalWrite(in3, HIGH);
+  digitalWrite(in4, LOW);
+}
+
+void detenerse(){
+  digitalWrite(in1, LOW);
+  digitalWrite(in2, LOW);
+  
+  digitalWrite(in3, LOW);
+  digitalWrite(in4, LOW);
+}
+
+void setup() {
+  pinMode(sensorIZQ, INPUT);
+  pinMode(sensorDER, INPUT);
+
+  pinMode(in1, OUTPUT);
+  pinMode(in2, OUTPUT);
+  pinMode(in3, OUTPUT);
+  pinMode(in4, OUTPUT);
+
+}
+
+void loop() {
+  int negraIZQ = digitalRead(sensorIZQ);
+  int negraDER = digitalRead(sensorDER);
+  
+  //considerando que HIGH = linea negra
+  if(negraIZQ == LOW && negraDER == LOW){
+    adelante();
+  }
+
+  else if(negraIZQ == HIGH && negraDER == LOW){
+    izquierda();
+  }
+
+  else if(negraIZQ == LOW && negraDER == HIGH){
+    derecha();
+  }
+
+  else if(negraIZQ == HIGH && negraDER == HIGH){
+    detenerse();
+  }
+
+}
