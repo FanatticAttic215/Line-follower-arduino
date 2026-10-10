@@ -1,3 +1,8 @@
+#include <Servo.h>
+
+Servo miServo;
+
+
 const int sensorIZQ = 13;
 const int sensorDER = 12;
 
@@ -5,6 +10,36 @@ const int in1 = 11;
 const int in2 = 10;
 const int in3 = 9;
 const int in4 = 8;
+
+const int trig = 7;
+const int echo = 6;
+
+
+void ServoMotorDeteccion(){
+  for(int i = 0; i < 45; i++){
+    miServo.write(i);
+    delay(20);
+
+    detectar();    
+  } 
+
+  for(int i = 45; i > -45; i--){
+    miServo.write(i);
+    delay(20);
+
+    detectar();
+  }
+
+
+}
+
+void detectar(){
+  digitalWrite(trig, LOW);
+  delayMicroseconds(2);
+  digitalWrite(trig, HIGH);
+  delayMicroseconds(10);      
+  digitalWrite(trig, LOW);
+}
 
 void adelante(){
   digitalWrite(in1, HIGH);
@@ -47,11 +82,21 @@ void setup() {
   pinMode(in3, OUTPUT);
   pinMode(in4, OUTPUT);
 
+  pinMode(trig, OUTPUT);
+  pinMode(echo, INPUT);
+
+  miServo.attach(5);
 }
 
 void loop() {
   int negraIZQ = digitalRead(sensorIZQ);
   int negraDER = digitalRead(sensorDER);
+  
+  ServoMotorDeteccion();
+
+  long tiempo = pulseIn(echo, HIGH, 30000);
+  float distancia = tiempo * 0.034 / 2;
+  
   
   //considerando que HIGH = linea negra
   if(negraIZQ == LOW && negraDER == LOW){
@@ -71,3 +116,4 @@ void loop() {
   }
 
 }
+
