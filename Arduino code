@@ -1,3 +1,7 @@
+#include <Servo.h>
+
+Servo miServo;
+
 const int sensorIZQ = 13;
 const int sensorDER = 12;
 
@@ -6,7 +10,31 @@ const int in2 = 10;
 const int in3 = 9;
 const int in4 = 8;
 
-void adelante(){
+const int trig = 7;
+const int echo = 6;
+const int pinServo = 5;
+
+const float obstaculo = 15.0;  
+const float SIN_ECO = 999.0;    
+
+const int TIEMPO_GIRO = 500;
+const int TIEMPO_AVANCE = 250;
+
+float detectar() {
+  digitalWrite(trig, LOW);
+  delayMicroseconds(2);
+  digitalWrite(trig, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trig, LOW);
+
+  unsigned long tiempo = pulseIn(echo, HIGH, 30000UL);
+
+  if (tiempo == 0) return SIN_ECO;
+
+  return tiempo * 0.0343 / 2.0;
+}
+
+void adelante() {
   digitalWrite(in1, HIGH);
   digitalWrite(in2, LOW);
 
@@ -14,15 +42,15 @@ void adelante(){
   digitalWrite(in4, LOW);
 }
 
-void derecha(){
-  digitalWrite(in1, LOW);
-  digitalWrite(in2, HIGH);
+void derecha() {
+  digitalWrite(in1, HIGH);
+  digitalWrite(in2, LOW);
 
   digitalWrite(in3, LOW);
   digitalWrite(in4, LOW);
 }
 
-void izquierda(){
+void izquierda() {
   digitalWrite(in1, LOW);
   digitalWrite(in2, LOW);
 
@@ -30,12 +58,49 @@ void izquierda(){
   digitalWrite(in4, LOW);
 }
 
-void detenerse(){
+void detenerse() {
   digitalWrite(in1, LOW);
   digitalWrite(in2, LOW);
-  
+
   digitalWrite(in3, LOW);
   digitalWrite(in4, LOW);
+}
+
+void ServoMotorDeteccion() {
+  detenerse(); 
+
+  for (int i = 45; i <= 135; i++) {
+    miServo.write(i);
+    delay(20);
+    detectar();
+  }
+  for (int i = 135; i >= 45; i--) {
+    miServo.write(i);
+    delay(20);
+    detectar();
+  }
+
+  miServo.write(90); 
+  delay(200);
+}
+
+void esquivar() {
+  detenerse();
+  izquierda();
+  delay(TIEMPO_GIRO);
+  adelante();
+  delay(TIEMPO_AVANCE);
+  derecha();
+  delay(TIEMPO_GIRO);
+  adelante();
+  delay(TIEMPO_AVANCE);
+  derecha();
+  delay(TIEMPO_GIRO);
+  adelante();
+  delay(TIEMPO_AVANCE);
+  izquierda();
+  delay(TIEMPO_GIRO);  
+  detenerse();
 }
 
 void setup() {
@@ -47,27 +112,38 @@ void setup() {
   pinMode(in3, OUTPUT);
   pinMode(in4, OUTPUT);
 
+  pinMode(trig, OUTPUT);
+  pinMode(echo, INPUT);
+
+  miServo.attach(pinServo);
+  miServo.write(90);  
+  delay(300);
 }
 
 void loop() {
   int negraIZQ = digitalRead(sensorIZQ);
   int negraDER = digitalRead(sensorDER);
-  
-  //considerando que HIGH = linea negra
-  if(negraIZQ == LOW && negraDER == LOW){
+
+  float distancia = detectar();
+
+  if (distancia <= obstaculo) {
+    ServoMotorDeteccion();
+    esquivar();
+    return;
+  }
+
+  // Considerando que HIGH = línea negra
+  if (negraIZQ == LOW && negraDER == LOW) {
     adelante();
   }
-
-  else if(negraIZQ == HIGH && negraDER == LOW){
+  else if (negraIZQ == HIGH && negraDER == LOW) {
     izquierda();
   }
-
-  else if(negraIZQ == LOW && negraDER == HIGH){
+  else if (negraIZQ == LOW && negraDER == HIGH) {
     derecha();
   }
-
-  else if(negraIZQ == HIGH && negraDER == HIGH){
-    detenerse();
-  }
-
+  else {
+    detenerse();    
+    }
 }
+
